@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clever Ekstern AI-assistent</title>
+  <style>
+    /* Baggrund med mørkt overlay og blur */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+            url('./baggrund.png') no-repeat center center; 
+      background-size: cover;
+      filter: blur(2px) brightness(0.8);
+      z-index: -2;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #fff;
+      z-index: 1;
+      position: relative;
+    }
+    .content {
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+    h1, h2, h3 {
+      color: #fff;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    h2 {
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+    p, li {
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+    }
+    .intro {
+      font-size: 18px;
+      margin-bottom: 25px;
+    }
+    .closing {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .signature {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    ol, ul {
+      padding-left: 20px;
+    }
+    ol ol {
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+    .start-button {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 30px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    .start-button:hover {
+      background: linear-gradient(135deg, #45a049, #4CAF50);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    }
+    .start-button:active {
+      transform: translateY(0px);
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <h1>Velkommen til Clever AI</h1>
+    <p class="intro">Vores nye AI-assistent på Clever.dk - tusinde tak fordi du vil hjælpe os med at gøre den endnu bedre!</p>
+    
+    <h2>Sådan udfører du testen:</h2>
+    <ol>
+      <li>Tryk på 'Start her' for at åbne chatten.</li>
+      <li>Stil alle de spørgsmål, som du gerne vil have nemmere adgang til svar på. Det kan være alt fra helt generelle spørgsmål til konkrete udfordringer som du har oplevet i hverdagen.</li>
+      <li>Hvis du får et svar du ikke er tilfreds med, så giv chatten et <strong>thumbs down</strong>:
+        <ol>
+          <li>Tryk på <strong>krydset</strong> i øverste højre hjørne</li>
+          <li><strong>Tryk thumbs down</strong> og skriv <strong>en kommentar</strong> om, hvorfor det ikke var et godt svar</li>
+          <li><strong>Klik på pilen</strong> og så er den sendt til os!</li>
+        </ol>
+      </li>
+      <li><strong>Genindlæs siden</strong> (tryk Ctrl + R) for at starte en ny samtale:
+        <ol>
+          <li>Dette kan du også gøre hvis du skifter emne meget, da AI'en så kan blive forvirret. Prøv derfor gerne at genindlæse siden og stil dit spørgsmål igen.</li>
+        </ol>
+      </li>
+    </ol>
+    
+    <div class="closing">
+      <p>Vi ser frem til at læse din samtale og feedback!</p>
+      <p class="signature">Bedste hilsner<br>Clever AI team</p>
+    </div>
+    
+    <button onclick="openChat()" class="start-button">
+      🚀 Start her
+    </button>
+  </div>
+
+  <!-- Boost.ai Chat Widget with default launcher -->
+  <script src="https://clever-ext.boost.ai/chatPanel/chatPanel.js"></script>
+  <script>
+    var boost = window.boostInit("clever-ext", {
+        startLanguage: "da-DK",
+        showLauncher: true,
+        chatPanel: {
+            settings: {
+                openTextLinksInNewTab: true
+            }
+        }
+    });
+
+    // Lyt til når samtale-ID ændres (ny samtale startes)
+    boost.chatPanel.addEventListener("conversationIdChanged", function(event) {
+        console.log("Ny samtale startet med ID:", event.detail.conversationId);
+    });
+
+    // Lyt til når chatten lukkes (kontekst mistes)
+    boost.chatPanel.addEventListener("chatPanelClosed", function() {
+        console.log("Chat blev lukket - kontekst vil blive nulstillet ved næste åbning");
+    });
+
+    // === INAKTIVITETS-TIMEOUT SYSTEM ===
+    // Trigger en advarsel efter 12 minutter uden aktivitet
+    const durationBeforeTimeout = 720000; // 12 minutter i millisekunder
+    const timeoutActionId = 3027; // Skal matches med Action ID i Boost.ai Admin Panel
+    var timeoutNotTriggered = true; // Sikrer at advarslen kun vises én gang
+
+    const resetInactivityTimer = () => {
+        clearTimeout(window.chatTimeoutId);
+        window.chatTimeoutId = setTimeout(() => {
+            if (timeoutNotTriggered) {
+                // Trigger en "Du har været inaktiv" besked fra chatten
+                boost.chatPanel.triggerAction(timeoutActionId);
+                timeoutNotTriggered = false;
+                console.log("Inaktivitets-advarsel sendt til brugeren");
+            }
+        }, durationBeforeTimeout);
+    };
+
+    // Reset timer ved bruger-aktivitet
+    boost.chatPanel.addEventListener('messageSent', resetInactivityTimer);
+    boost.chatPanel.addEventListener('actionLinkClicked', resetInactivityTimer);
+    boost.chatPanel.addEventListener('externalLinkClicked', resetInactivityTimer);
+    
+    // Start timer når chatten åbnes
+    boost.chatPanel.addEventListener('chatPanelOpened', () => {
+        timeoutNotTriggered = true; // Reset for ny session
+        resetInactivityTimer();
+    });
+
+    function openChat() {
+      if (window.boost && window.boost.chatPanel) {
+        window.boost.chatPanel.show();
+      } else {
+        console.log('Boost.ai chat panel not ready yet');
+      }
+    }
+  </script>
+</body>
+</html>
